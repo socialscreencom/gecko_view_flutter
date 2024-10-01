@@ -62,7 +62,20 @@ internal class GeckoViewInstance(context: Context,
         session.scrollDelegate = FlutterScrollDelegate()
         session.navigationDelegate = FlutterNavigationDelegate()
 
-        session.permissionDelegate = object : GeckoSession.PermissionDelegate {}
+        session.permissionDelegate = object : GeckoSession.PermissionDelegate {
+            override fun onContentPermissionRequest(
+                session: GeckoSession,
+                perm: GeckoSession.PermissionDelegate.ContentPermission
+            ): GeckoResult<Int>? {
+                if (
+                    perm.permission == GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_AUDIBLE ||
+                    perm.permission == GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_INAUDIBLE ||
+                    perm.permission == GeckoSession.PermissionDelegate.PERMISSION_GEOLOCATION) {
+                    return GeckoResult.fromValue(GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW)
+                }
+                return super.onContentPermissionRequest(session, perm)
+            }
+        }
 
         if (runtimeController.tabDataInitializer.enabled) {
             val extension = runtimeController.tabDataInitializer.extension
