@@ -10,7 +10,7 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterAssets
 
 class GeckoRuntimeController(context: Context, private val assets: FlutterAssets) {
 
-    private val runtime: GeckoRuntime = GeckoRuntime.create(context)
+    private val runtime: GeckoRuntime = GeckoRuntime.getDefault(context)
 
     val tabDataInitializer = TabDataInitializerExtension()
     val hostJsExecutor = HostJSExecutionExtension()
