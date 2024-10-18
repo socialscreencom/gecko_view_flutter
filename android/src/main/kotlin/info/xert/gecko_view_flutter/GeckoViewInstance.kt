@@ -77,6 +77,34 @@ internal class GeckoViewInstance(context: Context,
             }
         }
 
+        session.contentDelegate = object : GeckoSession.ContentDelegate {
+            override fun onCrash(session: GeckoSession) {
+                val url = currentUrl(tabId)
+
+                session.close()
+                sessions.remove(tabId)
+
+                createTab(tabId)
+                activateTab(tabId)
+                if (url != null) {
+                    openURI(tabId, url)
+                }
+            }
+
+            override fun onKill(session: GeckoSession) {
+                val url = currentUrl(tabId)
+
+                session.close()
+                sessions.remove(tabId)
+
+                createTab(tabId)
+                activateTab(tabId)
+                if (url != null) {
+                    openURI(tabId, url)
+                }
+            }
+        }
+
         if (runtimeController.tabDataInitializer.enabled) {
             val extension = runtimeController.tabDataInitializer.extension
             if (extension != null) {
