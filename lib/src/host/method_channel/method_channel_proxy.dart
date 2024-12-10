@@ -190,6 +190,10 @@ class MethodChannelProxy {
     await invokeMethodForPlugin("enableHostJSExecution", {});
   }
 
+  Future<void> enableRemoteDebugging() async {
+    await invokeMethodForPlugin("enableRemoteDebugging", {});
+  }
+
   Future<void> runJSAsync(int viewId, int tabId, String script) async {
     await invokeMethodForTab(viewId, tabId, "runJSAsync", {
       "script": script

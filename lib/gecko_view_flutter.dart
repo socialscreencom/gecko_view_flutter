@@ -101,6 +101,10 @@ class GeckoViewFlutter {
     await MethodChannelProxy.instance.enableHostJSExecution();
   }
 
+  static Future<void> enableRemoteDebugging() async {
+    await MethodChannelProxy.instance.enableRemoteDebugging();
+  }
+
   static Future<void> enableCookieManager() async {
     await MethodChannelProxy.instance.enableCookieManager();
   }

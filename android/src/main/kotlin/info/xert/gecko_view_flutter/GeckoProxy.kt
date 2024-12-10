@@ -36,6 +36,11 @@ class GeckoProxy(
                     callResult.success("Android ${android.os.Build.VERSION.RELEASE}")
                 }
 
+                "enableRemoteDebugging" -> {
+                    runtimeController.enableRemoteDebugging()
+                    callResult.success(true)
+                }
+
                 "enableHostJSExecution" -> {
                     runtimeController.enableHostJsExecution(unitResultConsumer(callResult))
                 }

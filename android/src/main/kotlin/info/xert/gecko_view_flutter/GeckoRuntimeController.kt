@@ -20,6 +20,10 @@ class GeckoRuntimeController(context: Context, private val assets: FlutterAssets
         return runtime
     }
 
+    fun enableRemoteDebugging() {
+        runtime.getSettings().setRemoteDebuggingEnabled(true)
+    }
+
     fun enableHostJsExecution(callback: ResultConsumer<Unit>) {
         if (tabDataInitializer.enabled) {
             hostJsExecutor.enable(runtime, assets, callback)
