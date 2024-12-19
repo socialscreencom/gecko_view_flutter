@@ -198,7 +198,7 @@ class GeckoTabController {
 }
 
 class GeckoViewController {
-  BuildContext _context;
+  final BuildContext _context;
 
   final int _id;
 
@@ -237,6 +237,11 @@ class GeckoViewController {
     final tab = GeckoTabController._(_id, tabId);
     _tabs.add(tab);
     return tab;
+  }
+
+  Future<void> closeTab(GeckoTabController tab) async {
+    await MethodChannelProxy.instance.closeTab(_id, tab.id());
+    _tabs.remove(tab);
   }
 
   Future<GeckoTabController?> getActiveTab() async {

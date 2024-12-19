@@ -185,6 +185,12 @@ class GeckoViewProxy(
                     result.success(true)
                 }
 
+                "closeTab" -> {
+                    val tabId = tryExtractSingleArgument<Int>(call, "tabId")
+                    instance.closeTab(tabId)
+                    result.success(true)
+                }
+
                 "getActiveTab" -> {
                     val currentTab = instance.getActiveTabId()
                     result.success(currentTab)

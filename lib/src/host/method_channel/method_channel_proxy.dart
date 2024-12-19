@@ -97,6 +97,18 @@ class MethodChannelProxy {
     }
   }
 
+  Future<void> closeTab(int viewId, int tabId) async {
+    try {
+      var channel = openViewChannel(viewId);
+      await channel.invokeMethod<void>("closeTab", {
+        "tabId": tabId
+      });
+    } on PlatformException catch (e) {
+      debugPrint("${e.code}: ${e.message}");
+      rethrow;
+    }
+  }
+
   Future<int?> getActiveTab(int viewId) async {
     try {
       var channel = openViewChannel(viewId);

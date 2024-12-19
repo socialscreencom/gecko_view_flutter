@@ -81,8 +81,7 @@ internal class GeckoViewInstance(context: Context,
             override fun onCrash(session: GeckoSession) {
                 val url = currentUrl(tabId)
 
-                session.close()
-                sessions.remove(tabId)
+                closeTab(tabId)
 
                 createTab(tabId)
                 activateTab(tabId)
@@ -94,8 +93,7 @@ internal class GeckoViewInstance(context: Context,
             override fun onKill(session: GeckoSession) {
                 val url = currentUrl(tabId)
 
-                session.close()
-                sessions.remove(tabId)
+                closeTab(tabId)
 
                 createTab(tabId)
                 activateTab(tabId)
@@ -299,5 +297,11 @@ internal class GeckoViewInstance(context: Context,
         val finder = session.finder
 
         finder.clear()
+    }
+
+    fun closeTab(tabId: Int) {
+        val session = getSessionByTabId(tabId)
+        session.close()
+        sessions.remove(tabId)
     }
 }
