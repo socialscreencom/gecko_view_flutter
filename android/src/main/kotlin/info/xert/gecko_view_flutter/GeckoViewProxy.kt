@@ -221,6 +221,9 @@ class GeckoViewProxy(
     override fun dispose() {
         channel.setMethodCallHandler(null)
         tabChannel.setMethodCallHandler(null)
+        promptChannel.setMethodCallHandler(null)
+
+        instance.dispose()
     }
 
     private fun handlePrompt(request: PromptRequest, callback: ResultConsumer<Any?>, type: String) {

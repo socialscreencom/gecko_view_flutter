@@ -43,4 +43,8 @@ class GeckoRuntimeController(context: Context, private val assets: FlutterAssets
     fun enableCookieManager(callback: ResultConsumer<Unit>) {
         cookieManagerExtension.enable(runtime, assets, callback)
     }
+
+    fun destroy() {
+        runtime.shutdown()
+    }
 }

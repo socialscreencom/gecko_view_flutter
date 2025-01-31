@@ -307,4 +307,11 @@ internal class GeckoViewInstance(context: Context,
             Log.e(TAG, "Failed to recover from kill in tab $tabId: ${e.message}")
         }
     }
+
+    fun dispose() {
+        sessions.forEach { (_, session) ->
+            session.session.close()
+        }
+        sessions.clear()
+    }
 }
