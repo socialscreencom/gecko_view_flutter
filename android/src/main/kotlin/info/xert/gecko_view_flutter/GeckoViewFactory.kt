@@ -10,7 +10,7 @@ import io.flutter.plugin.platform.PlatformViewFactory
 class GeckoViewFactory(private val messenger: BinaryMessenger,
                        private val runtimeController: GeckoRuntimeController)
     : PlatformViewFactory(StandardMessageCodec.INSTANCE) {
-    override fun create(context: Context?, viewId: Int, args: Any?): PlatformView {
-        return GeckoViewProxy(context!!, runtimeController, messenger, viewId)
+    override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
+        return GeckoViewProxy(context, runtimeController, messenger, viewId)
     }
 }

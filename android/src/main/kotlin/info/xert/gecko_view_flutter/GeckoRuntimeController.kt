@@ -10,7 +10,7 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterAssets
 
 class GeckoRuntimeController(context: Context, private val assets: FlutterAssets) {
 
-    private val runtime: GeckoRuntime = GeckoRuntime.getDefault(context)
+    private val runtime: GeckoRuntime = GeckoRuntime.create(context)
 
     val tabDataInitializer = TabDataInitializerExtension()
     val hostJsExecutor = HostJSExecutionExtension()
@@ -21,7 +21,7 @@ class GeckoRuntimeController(context: Context, private val assets: FlutterAssets
     }
 
     fun enableRemoteDebugging() {
-        runtime.getSettings().setRemoteDebuggingEnabled(true)
+        runtime.settings.setRemoteDebuggingEnabled(true)
     }
 
     fun enableHostJsExecution(callback: ResultConsumer<Unit>) {

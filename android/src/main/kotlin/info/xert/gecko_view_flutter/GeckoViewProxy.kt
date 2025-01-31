@@ -36,7 +36,7 @@ class GeckoViewProxy(
 
 
 
-    private val TAG: String = GeckoViewInstance::class.java.name
+    private val TAG: String = GeckoViewProxy::class.java.name
 
     private val channel: MethodChannel = MethodChannel(messenger, "gecko_view_flutter_$id")
     private val tabChannel: MethodChannel = MethodChannel(messenger, "gecko_view_flutter_${id}_tab")
@@ -219,6 +219,8 @@ class GeckoViewProxy(
     }
 
     override fun dispose() {
+        channel.setMethodCallHandler(null)
+        tabChannel.setMethodCallHandler(null)
     }
 
     private fun handlePrompt(request: PromptRequest, callback: ResultConsumer<Any?>, type: String) {

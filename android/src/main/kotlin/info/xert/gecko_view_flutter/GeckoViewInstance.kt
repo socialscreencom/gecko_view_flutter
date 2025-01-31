@@ -31,8 +31,6 @@ internal class GeckoViewInstance(context: Context,
 
     private val TAG: String = GeckoViewInstance::class.java.name
 
-    private val viewContext: Context
-
     val view: GeckoView
 
     data class SessionWrapper(val session: GeckoSession, var tabId: Int?)
@@ -41,10 +39,7 @@ internal class GeckoViewInstance(context: Context,
 
     init {
         Log.d(TAG, "Initializing GeckoView")
-
-        viewContext = context
-
-        view = GeckoView(viewContext)
+        view = GeckoView(context)
     }
 
     fun init() {
@@ -63,43 +58,23 @@ internal class GeckoViewInstance(context: Context,
         session.navigationDelegate = FlutterNavigationDelegate()
 
         session.permissionDelegate = object : GeckoSession.PermissionDelegate {
-            override fun onContentPermissionRequest(
-                session: GeckoSession,
-                perm: GeckoSession.PermissionDelegate.ContentPermission
-            ): GeckoResult<Int>? {
-                if (
-                    perm.permission == GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_AUDIBLE ||
-                    perm.permission == GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_INAUDIBLE ||
-                    perm.permission == GeckoSession.PermissionDelegate.PERMISSION_GEOLOCATION) {
-                    return GeckoResult.fromValue(GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW)
+            override fun onContentPermissionRequest(session: GeckoSession, perm: GeckoSession.PermissionDelegate.ContentPermission): GeckoResult<Int>? {
+                return when (perm.permission) {
+                    GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_AUDIBLE,
+                    GeckoSession.PermissionDelegate.PERMISSION_AUTOPLAY_INAUDIBLE,
+                    GeckoSession.PermissionDelegate.PERMISSION_GEOLOCATION -> GeckoResult.fromValue(GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW)
+                    else -> super.onContentPermissionRequest(session, perm)
                 }
-                return super.onContentPermissionRequest(session, perm)
             }
         }
 
         session.contentDelegate = object : GeckoSession.ContentDelegate {
             override fun onCrash(session: GeckoSession) {
-                val url = currentUrl(tabId)
-
-                closeTab(tabId)
-
-                createTab(tabId)
-                activateTab(tabId)
-                if (url != null) {
-                    openURI(tabId, url)
-                }
+                handleSessionCrash(tabId)
             }
 
             override fun onKill(session: GeckoSession) {
-                val url = currentUrl(tabId)
-
-                closeTab(tabId)
-
-                createTab(tabId)
-                activateTab(tabId)
-                if (url != null) {
-                    openURI(tabId, url)
-                }
+                handleSessionKill(tabId)
             }
         }
 
@@ -303,5 +278,33 @@ internal class GeckoViewInstance(context: Context,
         val session = getSessionByTabId(tabId)
         session.close()
         sessions.remove(tabId)
+    }
+
+    private fun handleSessionCrash(tabId: Int) {
+        try {
+            val url = currentUrl(tabId)
+            closeTab(tabId)
+            createTab(tabId)
+            activateTab(tabId)
+            if (url != null) {
+                openURI(tabId, url)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to recover from crash in tab $tabId: ${e.message}")
+        }
+    }
+
+    private fun handleSessionKill(tabId: Int) {
+        try {
+            val url = currentUrl(tabId)
+            closeTab(tabId)
+            createTab(tabId)
+            activateTab(tabId)
+            if (url != null) {
+                openURI(tabId, url)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to recover from kill in tab $tabId: ${e.message}")
+        }
     }
 }
