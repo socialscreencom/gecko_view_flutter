@@ -25,7 +25,5 @@ class GeckoViewFlutterPlugin: FlutterPlugin {
     override fun onDetachedFromEngine(binding: FlutterPluginBinding) {
         proxy?.dispose()
         proxy = null
-
-        runtimeController.destroy()
     }
 }
