@@ -4,6 +4,7 @@ import 'package:gecko_view_flutter/src/common/error.dart';
 import 'package:gecko_view_flutter/src/common/find_request.dart';
 import 'package:gecko_view_flutter/src/common/find_response.dart';
 import 'package:gecko_view_flutter/src/common/position.dart';
+import 'package:gecko_view_flutter/src/host/method_channel/method_channel_content_handler.dart';
 import 'package:gecko_view_flutter/src/host/method_channel/method_channel_prompt_handler.dart';
 import 'package:gecko_view_flutter/src/common/cookie.dart';
 
@@ -44,6 +45,11 @@ class MethodChannelProxy {
   MethodChannelPromptHandler registerPromptHandler(int viewId) {
     var channel = openPromptViewChannel(viewId);
     return MethodChannelPromptHandler(channel);
+  }
+
+  MethodChannelContentHandler registerContentHandler(int viewId) {
+    var channel = openViewChannel(viewId);
+    return MethodChannelContentHandler(channel);
   }
 
   static Future<T?> invokeMethodForPlugin<T>(String command, Map<String, Object?> args) async {
