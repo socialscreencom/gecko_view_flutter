@@ -43,33 +43,60 @@ abstract class Extension {
         private set
     fun enable(runtime: GeckoRuntime, assets: FlutterPlugin.FlutterAssets, callback: ResultConsumer<Unit>) {
         Log.d(TAG, "Initializing $extensionID Extension")
-        if (extension == null) {
-            val extensionPath = assets.getAssetFilePathBySubpath(extensionPath, "gecko_view_flutter")
-                    ?: throw GeckoViewException("Invalid plugin installation")
 
-            runtime.webExtensionController.ensureBuiltIn("resource://android/assets/$extensionPath", extensionID)
-                    .accept(
-                            { newExtension ->
-                                Handler(Looper.getMainLooper()).post {
-                                    if (newExtension != null) {
-                                        extension = newExtension
-                                        newExtension.setMessageDelegate(
-                                                messageDelegate,
-                                                "browser"
-                                        )
-
-                                        enabled = true
-                                        Log.d(TAG, "$extensionID Extension initialized")
-                                    }
-
-                                    callback.success(Unit)
-                                }
-                            },
-                            { e ->
-                                Log.e(TAG, "Error registering $extensionID Extension", e)
-                                callback.error(TAG, "Error registering $extensionID Extension", e)
-                            }
-                    )
+        if (extension != null) {
+            // Already installed. Answering matters: every path out of this
+            // method has to reach the callback, or the caller's future never
+            // completes and enabling an extension twice hangs for good.
+            callback.success(Unit)
+            return
         }
+
+        val extensionPath = assets.getAssetFilePathBySubpath(extensionPath, "gecko_view_flutter")
+                ?: throw GeckoViewException("Invalid plugin installation")
+
+        runtime.webExtensionController.ensureBuiltIn("resource://android/assets/$extensionPath", extensionID)
+                .accept(
+                        { newExtension ->
+                            Handler(Looper.getMainLooper()).post {
+                                if (newExtension == null) {
+                                    // Reporting success would leave the caller
+                                    // believing an extension that was never
+                                    // installed is ready to use.
+                                    callback.error(
+                                            TAG,
+                                            "$extensionID Extension was not installed",
+                                            null
+                                    )
+                                    return@post
+                                }
+
+                                extension = newExtension
+                                newExtension.setMessageDelegate(
+                                        messageDelegate,
+                                        "browser"
+                                )
+
+                                enabled = true
+                                Log.d(TAG, "$extensionID Extension initialized")
+
+                                callback.success(Unit)
+                            }
+                        },
+                        { e ->
+                            Log.e(TAG, "Error registering $extensionID Extension", e)
+                            // Same looper as the success path: a
+                            // MethodChannel.Result has to be answered on the
+                            // main thread. The message rather than the
+                            // Throwable, because the codec cannot encode one.
+                            Handler(Looper.getMainLooper()).post {
+                                callback.error(
+                                        TAG,
+                                        "Error registering $extensionID Extension",
+                                        e?.message
+                                )
+                            }
+                        }
+                )
     }
 }

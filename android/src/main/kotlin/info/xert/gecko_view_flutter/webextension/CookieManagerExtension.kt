@@ -33,10 +33,14 @@ class CookieManagerExtension: Extension() {
                         val messageJSON = message as JSONObject;
                         val requestId = messageJSON.getInt("id")
                         val status = messageJSON.getString("status")
+                        // Take the handler out of the map. Leaving it there
+                        // grew the map by one entry per request for the life of
+                        // the process, each holding a MethodChannel.Result.
+                        val handler = requestHandlers.remove(requestId)
                         if (status == "success") {
-                            requestHandlers[requestId]?.success(message)
+                            handler?.success(message)
                         } else {
-                            requestHandlers[requestId]?.error(
+                            handler?.error(
                                     "Cookie Manager",
                                     "Failed to perform operation",
                                     message.getString("error")
@@ -111,7 +115,7 @@ class CookieManagerExtension: Extension() {
             })
 
         } else {
-            throw GeckoViewException("Host JS Execution Extension not initialized")
+            throw GeckoViewException("Cookie Manager Extension not initialized")
         }
     }
 
@@ -175,7 +179,7 @@ class CookieManagerExtension: Extension() {
             })
 
         } else {
-            throw GeckoViewException("Host JS Execution Extension not initialized")
+            throw GeckoViewException("Cookie Manager Extension not initialized")
         }
     }
 
@@ -222,7 +226,7 @@ class CookieManagerExtension: Extension() {
             })
 
         } else {
-            throw GeckoViewException("Host JS Execution Extension not initialized")
+            throw GeckoViewException("Cookie Manager Extension not initialized")
         }
     }
 
@@ -321,7 +325,7 @@ class CookieManagerExtension: Extension() {
                 }
             })
         } else {
-            throw GeckoViewException("Host JS Execution Extension not initialized")
+            throw GeckoViewException("Cookie Manager Extension not initialized")
         }
     }
 }

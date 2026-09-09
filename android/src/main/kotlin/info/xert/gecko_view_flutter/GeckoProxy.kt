@@ -4,6 +4,7 @@ import android.util.Log
 import info.xert.gecko_view_flutter.common.Cookie
 import info.xert.gecko_view_flutter.common.CookiePartitionKey
 import info.xert.gecko_view_flutter.common.CookieSameSiteStatus
+import info.xert.gecko_view_flutter.common.GeckoViewException
 import info.xert.gecko_view_flutter.common.InvalidArgumentException
 import info.xert.gecko_view_flutter.common.NoArgumentException
 import info.xert.gecko_view_flutter.common.ResultConsumer
@@ -191,6 +192,8 @@ class GeckoProxy(
             callResult.error("Invalid argument error", e.message, null)
         } catch (e: NoArgumentException) {
             callResult.error("No argument error", e.message, null)
+        } catch (e: GeckoViewException) {
+            callResult.error("Gecko view error", e.message, null)
         }
     }
 
