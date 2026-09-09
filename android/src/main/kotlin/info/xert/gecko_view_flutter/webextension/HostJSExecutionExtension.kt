@@ -6,7 +6,7 @@ import org.json.JSONObject
 
 class HostJSExecutionExtension: Extension() {
     override val TAG: String
-        get() = TabDataInitializerExtension::class.java.name
+        get() = HostJSExecutionExtension::class.java.name
     override val extensionID: String
         get() = "host-js-execution@xert.info"
     override val extensionPath: String
