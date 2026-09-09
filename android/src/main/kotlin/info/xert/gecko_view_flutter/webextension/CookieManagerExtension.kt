@@ -4,6 +4,7 @@ import info.xert.gecko_view_flutter.common.Cookie
 import info.xert.gecko_view_flutter.common.CookiePartitionKey
 import info.xert.gecko_view_flutter.common.CookieSameSiteStatus
 import info.xert.gecko_view_flutter.common.ResultConsumer
+import info.xert.gecko_view_flutter.common.GeckoViewException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
@@ -110,7 +111,7 @@ class CookieManagerExtension: Extension() {
             })
 
         } else {
-            throw InternalError("Host JS Execution Extension not initialized")
+            throw GeckoViewException("Host JS Execution Extension not initialized")
         }
     }
 
@@ -174,7 +175,7 @@ class CookieManagerExtension: Extension() {
             })
 
         } else {
-            throw InternalError("Host JS Execution Extension not initialized")
+            throw GeckoViewException("Host JS Execution Extension not initialized")
         }
     }
 
@@ -221,7 +222,7 @@ class CookieManagerExtension: Extension() {
             })
 
         } else {
-            throw InternalError("Host JS Execution Extension not initialized")
+            throw GeckoViewException("Host JS Execution Extension not initialized")
         }
     }
 
@@ -320,7 +321,7 @@ class CookieManagerExtension: Extension() {
                 }
             })
         } else {
-            throw InternalError("Host JS Execution Extension not initialized")
+            throw GeckoViewException("Host JS Execution Extension not initialized")
         }
     }
 }

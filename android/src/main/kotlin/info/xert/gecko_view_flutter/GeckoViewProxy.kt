@@ -6,6 +6,7 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 
+import info.xert.gecko_view_flutter.common.GeckoViewException
 import info.xert.gecko_view_flutter.common.InvalidArgumentException
 import info.xert.gecko_view_flutter.common.NoArgumentException
 import info.xert.gecko_view_flutter.common.Offset
@@ -167,6 +168,8 @@ class GeckoViewProxy(
                     result.error("Invalid argument error", e.message, null)
                 } catch (e: NoArgumentException) {
                     result.error("No argument error", e.message, null)
+                } catch (e: GeckoViewException) {
+                    result.error("Gecko view error", e.message, null)
                 }
             }
         }
@@ -204,6 +207,8 @@ class GeckoViewProxy(
             result.error("Invalid argument error", e.message, null)
         } catch (e: NoArgumentException) {
             result.error("No argument error", e.message, null)
+        } catch (e: GeckoViewException) {
+            result.error("Gecko view error", e.message, null)
         }
     }
 

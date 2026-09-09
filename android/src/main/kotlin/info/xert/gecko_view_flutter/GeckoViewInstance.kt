@@ -10,6 +10,7 @@ import info.xert.gecko_view_flutter.common.Position
 import info.xert.gecko_view_flutter.common.ResultConsumer
 import info.xert.gecko_view_flutter.common.FindRequest
 import info.xert.gecko_view_flutter.common.FindResult
+import info.xert.gecko_view_flutter.common.GeckoViewException
 import info.xert.gecko_view_flutter.delegate.FlutterPromptDelegate
 import info.xert.gecko_view_flutter.delegate.FlutterNavigationDelegate
 import info.xert.gecko_view_flutter.delegate.FlutterScrollDelegate
@@ -47,7 +48,7 @@ internal class GeckoViewInstance(context: Context,
 
     fun createTab(tabId: Int) {
         if(sessions.containsKey(tabId)) {
-            throw InternalError("Internal tab id reused")
+            throw GeckoViewException("Internal tab id reused")
         }
 
         val session = GeckoSession();
@@ -84,7 +85,9 @@ internal class GeckoViewInstance(context: Context,
                 Handler(Looper.getMainLooper()).post {
                     session.webExtensionController.setMessageDelegate(extension, object : MessageDelegate {
                         override fun onMessage(nativeApp: String, message: Any, sender: WebExtension.MessageSender): GeckoResult<Any>? {
-                            val sessionWrapper = sessions[tabId]!!
+                            // The tab can be closed before this message
+                            // arrives; the delegate is not detached with it.
+                            val sessionWrapper = sessions[tabId] ?: return null
                             if (sessionWrapper.tabId == null) {
                                 val jsonMessage = message as JSONObject
 
@@ -113,7 +116,7 @@ internal class GeckoViewInstance(context: Context,
 
     private fun getSessionByTabId(tabId: Int): GeckoSession {
         if(!sessions.containsKey(tabId)) {
-            throw InternalError("Tab does not exist")
+            throw GeckoViewException("Tab does not exist")
         }
 
         return sessions[tabId]!!.session
@@ -121,7 +124,7 @@ internal class GeckoViewInstance(context: Context,
 
     private fun getInternalTabIdByTabId(tabId: Int): Int? {
         if(!sessions.containsKey(tabId)) {
-            throw InternalError("Tab does not exist")
+            throw GeckoViewException("Tab does not exist")
         }
 
         return sessions[tabId]!!.tabId
@@ -144,7 +147,7 @@ internal class GeckoViewInstance(context: Context,
         if(navigation is FlutterNavigationDelegate) {
             return navigation.currentUrl
         } else {
-            throw InternalError("Invalid session")
+            throw GeckoViewException("Invalid session")
         }
     }
 
@@ -179,7 +182,7 @@ internal class GeckoViewInstance(context: Context,
         if(scroll is FlutterScrollDelegate) {
             return scroll.scrollOffset
         } else {
-            throw InternalError("Invalid session")
+            throw GeckoViewException("Invalid session")
         }
     }
 
@@ -211,7 +214,7 @@ internal class GeckoViewInstance(context: Context,
 
     fun runJsAsync(tabId: Int, script: String) {
         val browserTabId = getInternalTabIdByTabId(tabId)
-                ?: throw InternalError("Invalid session state! TabId not initialized");
+                ?: throw GeckoViewException("Invalid session state! TabId not initialized");
         runtimeController.hostJsExecutor.runAsync(script, browserTabId)
     }
 
@@ -281,20 +284,23 @@ internal class GeckoViewInstance(context: Context,
     }
 
     private fun handleSessionCrash(tabId: Int) {
-        try {
-            val url = currentUrl(tabId)
-            closeTab(tabId)
-            createTab(tabId)
-            activateTab(tabId)
-            if (url != null) {
-                openURI(tabId, url)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to recover from crash in tab $tabId: ${e.message}")
-        }
+        recoverTab(tabId, "crash")
     }
 
     private fun handleSessionKill(tabId: Int) {
+        recoverTab(tabId, "kill")
+    }
+
+    /**
+     * Rebuilds a tab whose content process went away, restoring the URL it was
+     * showing.
+     *
+     * Every call below can fail on a tab that is already gone. They now raise
+     * GeckoViewException, which this catch reaches; while they raised Error the
+     * catch could not, and a failed recovery killed the process instead of
+     * leaving the tab blank.
+     */
+    private fun recoverTab(tabId: Int, reason: String) {
         try {
             val url = currentUrl(tabId)
             closeTab(tabId)
@@ -304,7 +310,7 @@ internal class GeckoViewInstance(context: Context,
                 openURI(tabId, url)
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to recover from kill in tab $tabId: ${e.message}")
+            Log.e(TAG, "Failed to recover from $reason in tab $tabId: ${e.message}")
         }
     }
 

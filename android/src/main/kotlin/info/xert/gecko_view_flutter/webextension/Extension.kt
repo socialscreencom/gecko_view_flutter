@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import info.xert.gecko_view_flutter.common.ResultConsumer
+import info.xert.gecko_view_flutter.common.GeckoViewException
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoRuntime
@@ -44,7 +45,7 @@ abstract class Extension {
         Log.d(TAG, "Initializing $extensionID Extension")
         if (extension == null) {
             val extensionPath = assets.getAssetFilePathBySubpath(extensionPath, "gecko_view_flutter")
-                    ?: throw InternalError("Invalid plugin installation")
+                    ?: throw GeckoViewException("Invalid plugin installation")
 
             runtime.webExtensionController.ensureBuiltIn("resource://android/assets/$extensionPath", extensionID)
                     .accept(

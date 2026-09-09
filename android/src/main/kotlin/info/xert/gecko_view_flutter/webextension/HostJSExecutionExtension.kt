@@ -1,5 +1,7 @@
 package info.xert.gecko_view_flutter.webextension
 
+import info.xert.gecko_view_flutter.common.GeckoViewException
+
 import org.json.JSONObject
 
 class HostJSExecutionExtension: Extension() {
@@ -19,7 +21,7 @@ class HostJSExecutionExtension: Extension() {
 
             port?.postMessage(message)
         } else {
-            throw InternalError("Host JS Execution Extension not initialized")
+            throw GeckoViewException("Host JS Execution Extension not initialized")
         }
     }
 }
