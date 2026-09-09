@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Matches FLUTTER_VERSION in the consumer, socialscreen/flutter-player, so a
+  # change that builds here builds there.
+  FLUTTER_VERSION: 3.44.9
+
+jobs:
+  dart:
+    name: Dart analyze and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # Infos are not fatal. Twenty are outstanding, most of them public
+      # constant names that cannot be renamed without breaking the API.
+      # Warnings and errors do fail the job.
+      - run: flutter analyze --no-fatal-infos
+
+      - run: flutter test
+
+  android:
+    name: Kotlin unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Matches the JDK in the development container, so a failure here is
+      # reproducible locally.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      # gradlew is gitignored, and Flutter injects it during a build. This step
+      # is also what compiles the plugin's Kotlin, so it is a build gate in its
+      # own right.
+      - name: Build the example
+        run: flutter build apk --debug
+        working-directory: example
+
+      - name: Run the plugin's unit tests
+        run: ./gradlew :gecko_view_flutter:testDebugUnitTest
+        working-directory: example/android
+
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kotlin-test-report
+          path: build/gecko_view_flutter/reports/tests/
