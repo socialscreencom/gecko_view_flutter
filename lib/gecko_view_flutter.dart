@@ -4,6 +4,7 @@ import 'package:gecko_view_flutter/src/host/method_channel/method_channel_proxy.
 export 'src/gecko_view_controller.dart';
 export 'package:gecko_view_flutter/src/common/find_request.dart';
 export 'src/common/error.dart';
+export 'src/host/content_handler.dart';
 
 class GeckoCookieManager {
   GeckoCookieManager._();

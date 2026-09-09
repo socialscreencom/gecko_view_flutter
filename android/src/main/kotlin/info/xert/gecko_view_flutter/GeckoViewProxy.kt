@@ -56,6 +56,40 @@ class GeckoViewProxy(
         }
     }
 
+    /**
+     * Result for a notification nothing is waiting on. A notification that
+     * cannot be delivered must not take down the caller, which is usually a
+     * Gecko delegate callback.
+     */
+    private val notificationResult = object : MethodChannel.Result {
+        override fun success(result: Any?) {}
+
+        override fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
+            Log.e(TAG, "Notification rejected by Dart: $errorCode $errorMessage")
+        }
+
+        override fun notImplemented() {}
+    }
+
+    /**
+     * Tells Dart that a tab's content process went away, and whether the tab
+     * was rebuilt. Without this the host app cannot tell a crashed and
+     * recovered player from one that has been running all along.
+     */
+    fun notifyContentCrash(tabId: Int, reason: String, recovered: Boolean, url: String?) {
+        invokeMethodUIThread(
+            channel,
+            "contentCrash",
+            mapOf(
+                "tabId" to tabId,
+                "reason" to reason,
+                "recovered" to recovered,
+                "url" to url
+            ),
+            notificationResult
+        )
+    }
+
     private val onTabMethodCall =
         object : MethodChannel.MethodCallHandler {
             override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {

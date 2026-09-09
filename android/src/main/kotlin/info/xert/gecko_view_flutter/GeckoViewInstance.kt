@@ -301,8 +301,9 @@ internal class GeckoViewInstance(context: Context,
      * leaving the tab blank.
      */
     private fun recoverTab(tabId: Int, reason: String) {
+        var url: String? = null
         try {
-            val url = currentUrl(tabId)
+            url = currentUrl(tabId)
             closeTab(tabId)
             createTab(tabId)
             activateTab(tabId)
@@ -311,7 +312,11 @@ internal class GeckoViewInstance(context: Context,
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to recover from $reason in tab $tabId: ${e.message}")
+            proxy.notifyContentCrash(tabId, reason, false, url)
+            return
         }
+
+        proxy.notifyContentCrash(tabId, reason, true, url)
     }
 
     fun dispose() {

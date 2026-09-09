@@ -2,6 +2,7 @@ import 'common/find_request.dart';
 import 'common/find_response.dart';
 import 'common/position.dart';
 import 'delegate/prompt_delegate.dart';
+import 'host/content_handler.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -205,28 +206,39 @@ class GeckoViewController {
   int _nextTabId = 0;
   final List<GeckoTabController> _tabs = [];
 
-  late final PromptHandler _promptHandler;
 
   PromptDelegate promptDelegate = FlutterPromptDelegate();
+
+  /// Called when a tab's content process dies, whether or not the tab was
+  /// rebuilt. Assign after construction; the handler reads this on each event.
+  ContentCrashHandler onContentCrash = (_) async {};
 
   GeckoViewController._(
       this._context,
       this._id
   ) {
     init();
-    _promptHandler = initPromptHandler();
+    initPromptHandler();
+    initContentHandler();
   }
 
   Future<void> init() async {
     await MethodChannelProxy.instance.register(_id);
   }
 
-  PromptHandler initPromptHandler() {
+  /// The handler needs no field: the channel holds it for as long as it is
+  /// registered, and it reads onContentCrash on every event.
+  void initContentHandler() {
+    final handler = MethodChannelProxy.instance.registerContentHandler(_id);
+    handler.onContentCrash = (crash) => onContentCrash(crash);
+  }
+
+  /// Like initContentHandler, the handler needs no field: the channel holds
+  /// it for as long as it is registered.
+  void initPromptHandler() {
     final handler = MethodChannelProxy.instance.registerPromptHandler(_id);
     handler.onChoicePrompt = onChoicePrompt;
     handler.onAlertPrompt = onAlertPrompt;
-
-    return handler;
   }
 
   Future<GeckoTabController> createTab() async {
